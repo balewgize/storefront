@@ -1,1 +1,1 @@
-# StoreFront - E-commerece platfrom
+# StoreFront, E-commerce platfrom
