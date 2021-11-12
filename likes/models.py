@@ -12,3 +12,6 @@ class LikedItem(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey()
+
+    def __str__(self):
+        return f"{self.user.username } likes {self.content_type.model} {self.object_id}"

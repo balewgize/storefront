@@ -4,15 +4,15 @@ from django.db import models
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
     discount = models.FloatField()
-    # product_set
 
 
 class Product(models.Model):
     """A class representing a product item in the store."""
 
     title = models.CharField(max_length=255)
+    slug = models.SlugField()
     description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey("Collection", on_delete=models.PROTECT)
@@ -83,11 +83,9 @@ class OrderItem(models.Model):
 class Address(models.Model):
     """Address of the customer used for delivery."""
 
-    city = models.CharField(max_length=100)
-    kebele = models.CharField(max_length=100)
-    customer = models.OneToOneField(
-        Customer, on_delete=models.CASCADE, primary_key=True
-    )
+    street = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
 
 class Cart(models.Model):
