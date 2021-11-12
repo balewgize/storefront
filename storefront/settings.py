@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "debug_toolbar",
     "playground",
     "store",
@@ -87,7 +88,7 @@ WSGI_APPLICATION = "storefront.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "storefront",
+        "NAME": "storefront2",
         "HOST": "localhost",
         "PORT": "5432",
         "USER": "alex",
