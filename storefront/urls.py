@@ -23,6 +23,7 @@ admin.site.index_title = "Admin"
 admin.site.site_title = "Storefront Admin"
 
 urlpatterns = [
+    path("store/", include("store.urls")),
     path("", include("playground.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
     path("admin/", admin.site.urls),
