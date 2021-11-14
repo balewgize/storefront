@@ -1,64 +1,46 @@
 from django.db.models.aggregates import Count
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Collection, Product
+from .models import Collection, OrderItem, Product
 from .seralizers import CollectionSerializer, ProductSerializer
 
 
-class ProductList(ListCreateAPIView):
-    """End point for listing products or creating a new product."""
+class ProductViewSet(ModelViewSet):
+    """Product viewsets that provide CRUD+L on Product model."""
 
-    queryset = Product.objects.select_related("collection").all()
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
     def get_serializer_context(self):
         return {"request": self.request}
 
-
-class ProductDetail(RetrieveUpdateDestroyAPIView):
-    """End point for a single product."""
-
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-
-    def delete(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        if product.orderitem_set.count() > 0:
+    def destroy(self, request, *args, **kwargs):
+        if OrderItem.objects.filter(product_id=kwargs["pk"]).count() > 0:
             return Response(
                 {
-                    "error": "Product cannot be deleted because it is associated with an order item."
+                    "error": "This Product cannot be deleted because it is associated with an order item."
                 },
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return super().destroy(request, *args, **kwargs)
 
 
-class CollectionList(ListCreateAPIView):
-    """End point for listing all collections or creating a single collection."""
-
-    queryset = Collection.objects.annotate(products_count=Count("product")).all()
-    serializer_class = CollectionSerializer
-
-
-class CollectionDetail(RetrieveUpdateDestroyAPIView):
-    """End point for a single collection."""
+class CollectionViewSet(ModelViewSet):
+    """Collection viewsets that provide CRUD+L on Collection model."""
 
     queryset = Collection.objects.annotate(products_count=Count("product")).all()
     serializer_class = CollectionSerializer
 
-    def delete(self, request, pk):
-        collection = get_object_or_404(Collection, pk=pk)
+    def destroy(self, request, *args, **kwargs):
+        collection = get_object_or_404(Collection, pk=kwargs["pk"])
         if collection.product_set.count() > 0:
             return Response(
                 {
-                    "error": "Collection cannot be delete because it contains one or more products."
+                    "error": "This Collection cannot be deleted because it contains one or more products."
                 },
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
-        collection.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return super().destroy(request, *args, **kwargs)
