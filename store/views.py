@@ -4,12 +4,12 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Collection, OrderItem, Product
-from .seralizers import CollectionSerializer, ProductSerializer
+from .models import Collection, OrderItem, Product, Review
+from .seralizers import CollectionSerializer, ProductSerializer, ReviewSerializer
 
 
 class ProductViewSet(ModelViewSet):
-    """Product viewsets that provide CRUD+L on Product model."""
+    """Viewsets that provide CRUD+L on Product model."""
 
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -29,7 +29,7 @@ class ProductViewSet(ModelViewSet):
 
 
 class CollectionViewSet(ModelViewSet):
-    """Collection viewsets that provide CRUD+L on Collection model."""
+    """Viewsets that provide CRUD+L on Collection model."""
 
     queryset = Collection.objects.annotate(products_count=Count("product")).all()
     serializer_class = CollectionSerializer
@@ -44,3 +44,15 @@ class CollectionViewSet(ModelViewSet):
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
         return super().destroy(request, *args, **kwargs)
+
+
+class ReviewViewSet(ModelViewSet):
+    """Viewsets that provide CRUD+L on Review model."""
+
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        return Review.objects.filter(product_id=self.kwargs["product_pk"])
+
+    def get_serializer_context(self):
+        return {"product_id": self.kwargs["product_pk"]}

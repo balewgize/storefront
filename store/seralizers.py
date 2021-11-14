@@ -1,10 +1,12 @@
 from decimal import Decimal
 from rest_framework import serializers
 
-from store.models import Product, Collection
+from store.models import Product, Collection, Review
 
 
 class CollectionSerializer(serializers.ModelSerializer):
+    """Serializer for Collection model."""
+
     class Meta:
         model = Collection
         fields = ["id", "title", "products_count"]
@@ -22,7 +24,7 @@ class CollectionSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    """Convert a Product model to a python dictionary to return as a JSON."""
+    """Serializer for Product model."""
 
     class Meta:
         model = Product
@@ -59,3 +61,15 @@ class ProductSerializer(serializers.ModelSerializer):
     #     instance.field_name = "some value"
     #     instance.save()
     #     return instance
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Serializer for Review model."""
+
+    class Meta:
+        model = Review
+        fields = ["id", "date", "name", "description"]
+
+    def create(self, validated_data):
+        product_id = self.context["product_id"]
+        return Review.objects.create(product_id=product_id, **validated_data)
