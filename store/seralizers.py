@@ -11,14 +11,14 @@ class CollectionSerializer(serializers.ModelSerializer):
 
     # to include products_count additonal field which is not in the model
     # we have to options: annotaion and serializer method field
-    products_count = serializers.SerializerMethodField(method_name="count_products")
+    # products_count = serializers.SerializerMethodField(method_name="count_products")
 
-    # return number of products in the collection
-    def count_products(self, collection):
-        return collection.product_set.count()
+    # # return number of products in the collection
+    # def count_products(self, collection):
+    #     return collection.product_set.count()
 
     # # using annotation: annotate products_count when querying collecion
-    # products_count = serializers.IntegerField()
+    products_count = serializers.IntegerField(read_only=True)
 
 
 class ProductSerializer(serializers.ModelSerializer):
