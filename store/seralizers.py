@@ -102,11 +102,11 @@ class AddCartItemSerializer(serializers.ModelSerializer):
         # get the cart_id from the context passed by CartItemViewSet
         cart_id = self.context["cart_id"]
         # get product_id and quantity from the POST request data
-        prodcut_id = self.validated_data["product_id"]
+        product_id = self.validated_data["product_id"]
         quantity = self.validated_data["quantity"]
 
         try:
-            cart_item = CartItem.objects.get(cart_id=cart_id, product_id=prodcut_id)
+            cart_item = CartItem.objects.get(cart_id=cart_id, product_id=product_id)
             cart_item.quantity += quantity
             cart_item.save()
             self.instance = cart_item
@@ -116,3 +116,11 @@ class AddCartItemSerializer(serializers.ModelSerializer):
             )
 
         return self.instance
+
+
+class UpdateCartItemSerializer(serializers.ModelSerializer):
+    """Custom serializer to update a cart item."""
+
+    class Meta:
+        model = CartItem
+        fields = ["quantity"]
