@@ -9,6 +9,7 @@ psycopg2 = "*"
 djangorestframework = "*"
 django = "==3.2.9"
 drf-nested-routers = "*"
+django-filter = "*"
 
 [dev-packages]
 black = "*"
