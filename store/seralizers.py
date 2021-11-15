@@ -1,4 +1,5 @@
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 from django.db.models.aggregates import Sum
 from rest_framework import serializers
 from rest_framework.utils import field_mapping
@@ -81,3 +82,37 @@ class CartSerializer(serializers.ModelSerializer):
         return sum(
             [item.quantity * item.product.unit_price for item in cart.items.all()]
         )
+
+
+class AddCartItemSerializer(serializers.ModelSerializer):
+    """Custom Serializer for adding items to a cart."""
+
+    product_id = serializers.IntegerField()
+
+    class Meta:
+        model = CartItem
+        fields = ["id", "product_id", "quantity"]
+
+    def validate_product_id(self, value):
+        if not Product.objects.filter(pk=value).exists():
+            raise ValidationError("No Product with the given ID was found.")
+        return value
+
+    def save(self, **kwargs):
+        # get the cart_id from the context passed by CartItemViewSet
+        cart_id = self.context["cart_id"]
+        # get product_id and quantity from the POST request data
+        prodcut_id = self.validated_data["product_id"]
+        quantity = self.validated_data["quantity"]
+
+        try:
+            cart_item = CartItem.objects.get(cart_id=cart_id, product_id=prodcut_id)
+            cart_item.quantity += quantity
+            cart_item.save()
+            self.instance = cart_item
+        except CartItem.DoesNotExist:
+            self.instance = CartItem.objects.create(
+                cart_id=cart_id, **self.validated_data
+            )
+
+        return self.instance
