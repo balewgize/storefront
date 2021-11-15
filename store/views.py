@@ -77,7 +77,5 @@ class ReviewViewSet(ModelViewSet):
 class CartViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
     """Custom Viewsets to create, get or delete a cart."""
 
-    queryset = Cart.objects.all()
+    queryset = Cart.objects.prefetch_related("items__product").all()
     serializer_class = CartSerializer
-
-

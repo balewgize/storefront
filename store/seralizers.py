@@ -1,7 +1,9 @@
 from decimal import Decimal
+from django.db.models.aggregates import Sum
 from rest_framework import serializers
+from rest_framework.utils import field_mapping
 
-from store.models import Cart, Product, Collection, Review
+from store.models import Cart, CartItem, Product, Collection, Review
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -11,15 +13,6 @@ class CollectionSerializer(serializers.ModelSerializer):
         model = Collection
         fields = ["id", "title", "products_count"]
 
-    # to include products_count additonal field which is not in the model
-    # we have to options: annotaion and serializer method field
-    # products_count = serializers.SerializerMethodField(method_name="count_products")
-
-    # # return number of products in the collection
-    # def count_products(self, collection):
-    #     return collection.product_set.count()
-
-    # # using annotation: annotate products_count when querying collecion
     products_count = serializers.IntegerField(read_only=True)
 
 
@@ -38,29 +31,13 @@ class ProductSerializer(serializers.ModelSerializer):
             "slug",
         ]
 
-    # price_with_tax = serializers.SerializerMethodField(method_name="calculate_tax")
-    # # collection = serializers.PrimaryKeyRelatedField() # primary key
-    # # collection = serializers.StringRelatedField() # String
-    # collection = CollectionSeralizer()  # nested objects
-    # collection = serializers.HyperlinkedRelatedField(
-    #     view_name="store:collection-detail", queryset=Collection.objects.all()
-    # )
 
-    # def calculate_tax(self, product: Product):
-    #     return product.unit_price * Decimal(1.1)
+class SimpleProductSerializer(serializers.ModelSerializer):
+    """Expose few informaion about a product."""
 
-    # # to modify the object before creating: override create() method
-    # def create(self, validated_data):
-    #     product = Product(**validated_data)
-    #     product.other_filed = "some value"
-    #     product.save()
-    #     return product
-
-    # # to modify an object before updating: override the update() method
-    # def update(self, instance, validated_data):
-    #     instance.field_name = "some value"
-    #     instance.save()
-    #     return instance
+    class Meta:
+        model = Product
+        fields = ["id", "title", "unit_price"]
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -75,11 +52,32 @@ class ReviewSerializer(serializers.ModelSerializer):
         return Review.objects.create(product_id=product_id, **validated_data)
 
 
+class CartItemSerializer(serializers.ModelSerializer):
+    """Serializer for CartItem model."""
+
+    product = SimpleProductSerializer()
+    total_price = serializers.SerializerMethodField(method_name="get_total_price")
+
+    class Meta:
+        model = CartItem
+        fields = ["id", "product", "quantity", "total_price"]
+
+    def get_total_price(self, cart_item):
+        return cart_item.quantity * cart_item.product.unit_price
+
+
 class CartSerializer(serializers.ModelSerializer):
     """Serializer for Cart model."""
 
     id = serializers.UUIDField(read_only=True)
+    items = CartItemSerializer(many=True)
+    total_price = serializers.SerializerMethodField(method_name="get_total_price")
 
     class Meta:
         model = Cart
-        fields = ["id"]
+        fields = ["id", "items", "total_price"]
+
+    def get_total_price(self, cart: Cart):
+        return sum(
+            [item.quantity * item.product.unit_price for item in cart.items.all()]
+        )
