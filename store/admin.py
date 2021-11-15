@@ -115,3 +115,7 @@ class CollectionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(products_count=Count("product"))
+
+
+admin.site.register(models.Cart)
+admin.site.register(models.CartItem)

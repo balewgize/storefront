@@ -113,7 +113,7 @@ class Address(models.Model):
 class Cart(models.Model):
     """Cart created by a customer."""
 
-    id = models.UUIDField(primary_key=True, default=uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
