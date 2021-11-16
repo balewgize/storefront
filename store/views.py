@@ -5,24 +5,17 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.mixins import (
     CreateModelMixin,
-    DestroyModelMixin,
     RetrieveModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
 )
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import status
 
 from .filters import ProductFilter
-from .models import Cart, CartItem, Collection, OrderItem, Product, Review
+from .models import Cart, CartItem, Collection, Customer, OrderItem, Product, Review
 from .pagination import DefaultPagination
-from .seralizers import (
-    AddCartItemSerializer,
-    CartItemSerializer,
-    CartSerializer,
-    CollectionSerializer,
-    ProductSerializer,
-    ReviewSerializer,
-    UpdateCartItemSerializer,
-)
+from .seralizers import *
 
 
 class ProductViewSet(ModelViewSet):
@@ -81,7 +74,10 @@ class ReviewViewSet(ModelViewSet):
 
 
 class CartViewSet(
-    CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet
+    CreateModelMixin,
+    RetrieveModelMixin,
+    DestroyModelMixin,
+    GenericViewSet,
 ):
     """Custom Viewsets to create, get or delete a cart."""
 
@@ -90,7 +86,7 @@ class CartViewSet(
 
 
 class CartItemViewSet(ModelViewSet):
-    """Viewsets that provide CRUD on cart items."""
+    """Viewsets that provide CRUD+L on cart items."""
 
     http_method_names = ["get", "post", "patch", "delete"]
 
@@ -108,3 +104,16 @@ class CartItemViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {"cart_id": self.kwargs["cart_pk"]}
+
+
+class CustomerViewSet(
+    CreateModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+    GenericViewSet,
+):
+    """Viewsets that provide CRUD on customers."""
+
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
