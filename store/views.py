@@ -74,7 +74,6 @@ class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
-        print(self.kwargs)
         return Review.objects.filter(product_id=self.kwargs["product_pk"])
 
     def get_serializer_context(self):
@@ -91,7 +90,7 @@ class CartViewSet(
 
 
 class CartItemViewSet(ModelViewSet):
-    """Viewsets that provide CRUD+L on cart items."""
+    """Viewsets that provide CRUD on cart items."""
 
     http_method_names = ["get", "post", "patch", "delete"]
 
@@ -108,7 +107,4 @@ class CartItemViewSet(ModelViewSet):
         )
 
     def get_serializer_context(self):
-        context = {"cart_id": self.kwargs["cart_pk"]}
-        if self.request.method in ["PATCH", "DELETE"]:
-            context["product_id"] = self.kwargs["pk"]
-        return context
+        return {"cart_id": self.kwargs["cart_pk"]}
