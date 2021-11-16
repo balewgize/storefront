@@ -24,6 +24,8 @@ admin.site.site_title = "Storefront Admin"
 
 urlpatterns = [
     path("store/", include("store.urls")),
+    path("auth/", include("djoser.urls")),
+    path("auth/", include("djoser.urls.jwt")),
     path("", include("playground.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
     path("admin/", admin.site.urls),
