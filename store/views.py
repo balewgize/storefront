@@ -1,6 +1,7 @@
 from django.db.models.aggregates import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.mixins import (
@@ -117,3 +118,9 @@ class CustomerViewSet(
 
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+
+    @action(detail=False)
+    def me(self, request):
+        customer = Customer.objects.get(user_id=request.user.id)
+        serializer = CustomerSerializer(customer)
+        return Response(serializer.data)
