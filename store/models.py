@@ -71,6 +71,9 @@ class Customer(models.Model):
 
     class Meta:
         ordering = ["user__first_name", "user__last_name"]
+        permissions = [
+            ("view_history", "Can view history"),
+        ]
 
     @admin.display(ordering="user__first_name")
     def first_name(self):
@@ -101,7 +104,9 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
     class Meta:
-        permissions = [("cancel_order", "Can cancel order")]
+        permissions = [
+            ("cancel_order", "Can cancel order"),
+        ]
 
 
 class OrderItem(models.Model):

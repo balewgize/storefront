@@ -16,7 +16,7 @@ from rest_framework import status
 from .filters import ProductFilter
 from .models import Cart, CartItem, Collection, Customer, OrderItem, Product, Review
 from .pagination import DefaultPagination
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from .seralizers import *
 
 
@@ -117,9 +117,14 @@ class CustomerViewSet(ModelViewSet):
     serializer_class = CustomerSerializer
     permission_classes = [IsAdminUser]
 
+    @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
+    def history(self, request, pk):
+        """History of a customer."""
+        return Response("Customer history")
+
     @action(detail=False, methods=["GET", "PUT"], permission_classes=[IsAuthenticated])
     def me(self, request):
-        # show the current user's profile
+        """Profile of a customer."""
         customer, created = Customer.objects.get_or_create(user_id=request.user.id)
         if request.method == "GET":
             serializer = CustomerSerializer(customer)
