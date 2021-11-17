@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework import serializers
 
@@ -93,7 +92,7 @@ class AddCartItemSerializer(serializers.ModelSerializer):
 
     def validate_product_id(self, value):
         if not Product.objects.filter(pk=value).exists():
-            raise ValidationError("No Product with the given ID was found.")
+            raise serializers.ValidationError("No Product with the given ID was found.")
         return value
 
     def save(self, **kwargs):
@@ -172,10 +171,27 @@ class OrderSerializer(serializers.ModelSerializer):
         )
 
 
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    """Serializer to update the payment status of an order."""
+
+    class Meta:
+        model = Order
+        fields = ["payment_status"]
+
+
 class CreateOrderSerializer(serializers.Serializer):
     """Custom serializer to create an order."""
 
     cart_id = serializers.UUIDField()
+
+    def validate_cart_id(self, cart_id):
+        if not Cart.objects.filter(pk=cart_id).exists():
+            raise serializers.ValidationError("No cart with the given ID was found.")
+        elif CartItem.objects.filter(cart_id=cart_id).count() == 0:
+            raise serializers.ValidationError(
+                "The cart is empty. Please add one or more products."
+            )
+        return cart_id
 
     def save(self, **kwargs):
         # we need to get cart items and convert them to order items
