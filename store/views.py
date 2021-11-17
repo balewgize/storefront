@@ -139,11 +139,25 @@ class CustomerViewSet(ModelViewSet):
 class OrderViewSet(ModelViewSet):
     """Viewsets that provide CRUD+L on orders."""
 
-    serializer_class = OrderSerializer
+    # http_method_names = ["get", "post"]
     permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateOrderSerializer(
+            data=request.data, context={"user_id": self.request.user.id}
+        )
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        serializer = OrderSerializer(order)
+        return Response(serializer.data)
 
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
             return Order.objects.all()
         return Order.objects.filter(customer__user_id=user.id)
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateOrderSerializer
+        return OrderSerializer
