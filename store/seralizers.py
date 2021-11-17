@@ -197,9 +197,7 @@ class CreateOrderSerializer(serializers.Serializer):
         # we need to get cart items and convert them to order items
         with transaction.atomic():
             cart_id = self.validated_data["cart_id"]
-            customer, created = Customer.objects.get_or_create(
-                user_id=self.context["user_id"]
-            )
+            customer = Customer.objects.get(user_id=self.context["user_id"])
             order = Order.objects.create(customer=customer)
 
             # get cart items from the POST request
