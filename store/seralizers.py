@@ -1,10 +1,20 @@
 from decimal import Decimal
 from django.core.exceptions import ValidationError
+from django.db.models import fields
 from django.db.models.aggregates import Sum
 from rest_framework import serializers
 from rest_framework.utils import field_mapping
 
-from store.models import Cart, CartItem, Customer, Product, Collection, Review
+from store.models import (
+    Cart,
+    CartItem,
+    Customer,
+    Order,
+    OrderItem,
+    Product,
+    Collection,
+    Review,
+)
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -134,3 +144,41 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ["id", "user_id", "phone", "birth_date", "membership"]
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    """Serializer for the OrderItem model."""
+
+    product = SimpleProductSerializer()
+    total_price = serializers.SerializerMethodField(method_name="get_total_price")
+
+    class Meta:
+        model = OrderItem
+        fields = ["id", "product", "quantity", "total_price"]
+
+    def get_total_price(self, order_item):
+        return order_item.quantity * order_item.product.unit_price
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """Serializer for the Order model."""
+
+    customer_id = serializers.IntegerField(read_only=True)
+    items = OrderItemSerializer(many=True)
+    total_price = serializers.SerializerMethodField(method_name="get_total_price")
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "customer_id",
+            "placed_at",
+            "payment_status",
+            "items",
+            "total_price",
+        ]
+
+    def get_total_price(self, order):
+        return sum(
+            [item.quantity * item.product.unit_price for item in order.items.all()]
+        )
